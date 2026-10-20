@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **EXISTS and AND/OR as a CAST or function argument anywhere, and as a window item, no longer
+  fail (#970)** — CUBRID rejects a bare `EXISTS (...)`, `NOT (...)` or `a AND b` / `a OR b` as
+  a CAST or function argument in every position, not only in the SELECT list and ORDER BY
+  (-493), and rejects a bare `EXISTS (...)` or `NOT (...)` as a window or `WITHIN GROUP`
+  `ORDER BY` / `PARTITION BY` item. A CAST or function now groups such an argument wherever it
+  appears, and those window items are grouped like ORDER BY items, so
+  `where(func.coalesce(and_(...), 0) == 1)`, `having(cast(and_(...), Integer) == 1)`, a join
+  `ON coalesce(...)`, `update().values(x=cast(and_(...), Integer))`,
+  `over(order_by=exists())`, `over(partition_by=exists())` and `within_group(~exists())` now
+  run. Bare `WHERE`/`HAVING`/`ON` conditions, `GROUP BY` items and `CASE` conditions render as
+  before. A CAST or function in `GROUP BY` now groups its argument too, but CUBRID still rejects
+  it ("search condition is not allowed as group by spec"). The `docs/FEATURE_SUPPORT.md` note
+  from #971 that listed these forms as unsupported is replaced.
+
 - **EXISTS and AND/OR inside a CAST, a function or ORDER BY no longer fail (#968)** — CUBRID
   also rejects a bare `EXISTS (...)`, `NOT (...)` or `a AND b` / `a OR b` as a CAST or
   function argument and as an ORDER BY item (-493). The compiler now groups such an expression
@@ -62,11 +76,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
-- **Boolean expressions that still fail on CUBRID (#968)** — `docs/FEATURE_SUPPORT.md` now
-  states that `EXISTS (...)` and `a AND b` as a CAST or function argument in `WHERE`/`HAVING`
-  (`WHERE coalesce(a AND b, 0) = 1`, `WHERE CAST(a AND b AS INTEGER) = 1`) and as a window
-  `OVER (ORDER BY EXISTS (...))` item still fail with -493 on CUBRID 11.4. It gives a `case()`
-  workaround; grouping them is tracked in #970.
+- **Boolean expressions that still failed on CUBRID (#968)** — superseded by the #970 fix
+  above: those forms now run, and the `docs/FEATURE_SUPPORT.md` note that listed them, with its
+  `case()` workaround, is replaced. Do not use that workaround inside a window: CUBRID 11.4
+  evaluates a `CASE` (or `if()`) in a window `ORDER BY` or `PARTITION BY` as a constant, so the
+  window ignores it.
 
 - **The first-connection course has one page per lesson (#943)** — the rest of the course moves out of the Quick Start page into Lesson 3 (save a row and read it back through a separate connection, `save_row.py`), Lesson 4 (a transaction undone with `rollback()`, `rollback_row.py`, which shows the row count inside the transaction and can be rerun) and Lesson 5 (the owner- and comment-checked cleanup and removing the lab with `docker rm -f -v`), in English and Korean. The former single `first_saved_row.py` is split between Lessons 3 and 4; the table, its marker comment and the cleanup script are unchanged. The Quick Start page lists all five lessons, keeps the first-connection error table and next steps, and keeps its former "Step 3" and "Clean up" anchors as short "moved to" sections. Every command was rerun against `cubrid/cubrid:11.4` with the published SQLAlchemy 2.1.4, sqlalchemy-cubrid 1.11.0 and pycubrid 1.13.0, including reruns and the rollback before Lesson 3.
 
