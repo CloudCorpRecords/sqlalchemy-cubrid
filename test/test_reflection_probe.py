@@ -49,10 +49,10 @@ class _FakeInspector:
 
 class _FakeEngine:
     def __init__(self) -> None:
-        self.disposed = False
+        self.dispose_calls = 0
 
     def dispose(self) -> None:
-        self.disposed = True
+        self.dispose_calls += 1
 
 
 def _run_main(monkeypatch: pytest.MonkeyPatch, argv: list[str], fail_inspect: bool = False):
@@ -75,7 +75,7 @@ def test_disposes_engine_on_normal_completion(
     engine, created = _run_main(monkeypatch, ["--url", "cubrid://dba@localhost:33000/testdb"])
     main()
     assert created["engine"] is engine
-    assert engine.disposed
+    assert engine.dispose_calls == 1
     assert "Probing 1 table(s)" in capsys.readouterr().out
 
 
@@ -85,7 +85,7 @@ def test_disposes_engine_on_inspector_failure(monkeypatch: pytest.MonkeyPatch) -
     )
     with pytest.raises(RuntimeError, match="inspector failure"):
         main()
-    assert engine.disposed
+    assert engine.dispose_calls == 1
 
 
 def test_disposes_engine_when_compare_finds_no_metadata(
@@ -98,7 +98,7 @@ def test_disposes_engine_when_compare_finds_no_metadata(
     with pytest.raises(SystemExit) as excinfo:
         main()
     assert excinfo.value.code == 1
-    assert engine.disposed
+    assert engine.dispose_calls == 1
     assert "No MetaData found" in capsys.readouterr().err
 
 
@@ -106,8 +106,16 @@ def test_missing_url_exits_without_creating_engine(
     monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     monkeypatch.delenv("CUBRID_TEST_URL", raising=False)
+    create_engine_calls: list[str] = []
+
+    def fail_create_engine(url: str, **kwargs):
+        create_engine_calls.append(url)
+        raise AssertionError("create_engine must not be called for a missing URL")
+
+    monkeypatch.setattr(MODULE, "create_engine", fail_create_engine)
     monkeypatch.setattr(sys, "argv", ["reflection_probe.py"])
     with pytest.raises(SystemExit) as excinfo:
         main()
     assert excinfo.value.code == 1
+    assert create_engine_calls == []
     assert "Set CUBRID_TEST_URL" in capsys.readouterr().err
