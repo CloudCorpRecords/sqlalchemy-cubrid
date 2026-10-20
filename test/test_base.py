@@ -114,11 +114,11 @@ class TestReservedWords:
         assert "table" in RESERVED_WORDS
         assert "merge" not in RESERVED_WORDS
 
-    @pytest.mark.parametrize("word", ["key", "value"])
+    @pytest.mark.parametrize("word", ["key", "value", "day", "count", "group"])
     def test_key_value_are_reserved(self, word):
         assert word in RESERVED_WORDS
 
-    @pytest.mark.parametrize("word", ["key", "value"])
+    @pytest.mark.parametrize("word", ["key", "value", "day", "count", "group"])
     def test_reserved_column_is_quoted_in_select(self, word):
         import sqlalchemy as sa
 
@@ -141,6 +141,38 @@ class TestIdentifierPreparer:
         assert preparer.final_quote == '"'
         assert preparer.escape_quote == '"'
         assert preparer.omit_schema is False
+
+    @pytest.mark.parametrize("word", ["day", "count", "group"])
+    def test_reserved_identifier_is_quoted(self, word):
+        preparer = CubridIdentifierPreparer(CubridDialect())
+
+        assert preparer.quote(word) == f'"{word}"'
+
+    @pytest.mark.parametrize(
+        ("identifier", "expected"),
+        [
+            ('weird"name', '"weird""name"'),
+            ('a"b"c', '"a""b""c"'),
+        ],
+    )
+    def test_quote_escapes_embedded_double_quote(self, identifier, expected):
+        preparer = CubridIdentifierPreparer(CubridDialect())
+
+        assert preparer.quote(identifier) == expected
+
+    def test_column_with_embedded_quote_is_quoted_and_escaped_in_select(self):
+        import sqlalchemy as sa
+
+        metadata = sa.MetaData()
+        table = sa.Table(
+            "quoting_probe",
+            metadata,
+            sa.Column("id", sa.Integer, primary_key=True),
+            sa.Column('weird"name', sa.String(50)),
+        )
+        compiled = str(sa.select(table.c['weird"name']).compile(dialect=CubridDialect()))
+
+        assert '"weird""name"' in compiled
 
 
 class TestExecutionContext:
