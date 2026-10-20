@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **GROUP_CONCAT DISTINCT, ORDER BY and SEPARATOR no longer fail (#990, #984)** — the
+  `GROUP_CONCAT` visitor wrapped its arguments in a second pair of parentheses, which CUBRID
+  rejects around its modifiers (-493). `func.group_concat(col.distinct())` and a
+  `literal_column("col ORDER BY col DESC SEPARATOR ';'")` argument now run. `GROUP_CONCAT`
+  renders with only its argument-list parentheses, so `GROUP_CONCAT((x))` becomes
+  `GROUP_CONCAT(x)`, as the documentation already showed. A boolean `EXISTS`, `NOT`, `AND` or
+  `OR` argument is grouped once, like any function argument (#970), instead of three times:
+  `GROUP_CONCAT((a = 1 AND b = 2))`. Values are unchanged; the change is otherwise
+  compatible. `FEATURE_SUPPORT` now shows the supported forms and lists the unsupported ones:
+  a separate `SEPARATOR` argument, more than one argument, and SQLAlchemy 2.1's
+  `aggregate_order_by()` and `aggregate_strings()`. Verified on CUBRID 11.4; not verified on
+  10.2, 11.0 or 11.2.
+
 - **EXISTS and AND/OR as a simple CASE value no longer fail (#987)** — CUBRID rejects a bare
   `a AND b`, `a OR b`, `NOT (...)` or `EXISTS (...)` as the value operand of a simple `CASE`
   but accepts it inside parentheses. The `value=` operand of `case()` is now grouped like a
