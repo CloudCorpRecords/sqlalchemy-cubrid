@@ -312,7 +312,7 @@ after the statement (see [Known Limitations](#known-limitations)).
 - **Async requires pycubrid >= 1.8.0,<2.0** — the `cubrid+aiopycubrid://` driver needs the async-capable pycubrid package line currently supported by this project
 - **CARDINALITY() broken** — `func.cardinality()` raises `CompileError` with workaround guidance; the CUBRID server has a [known bug](https://github.com/cubrid-lab/.github/issues/3)
 - **Reserved words auto-quoted** — Column names matching CUBRID reserved words (`day`, `count`, `value`, etc.) are automatically double-quoted in DDL; see [reserved word list](https://github.com/cubrid-lab/.github/issues/5)
-- **Timezone type reflection** — CUBRID's `TIMESTAMPTZ`, `TIMESTAMPLTZ`, `DATETIMETZ` and `DATETIMELTZ` reflect as distinct SQLAlchemy types (`sqlalchemy_cubrid.TIMESTAMPTZ`/`TIMESTAMPLTZ`/`DATETIMETZ`/`DATETIMELTZ`, each with `timezone=True`) rather than collapsing into plain `TIMESTAMP`/`DATETIME` (#181, #442); see [Type Mapping](docs/TYPES.md#type-reflection-ischema_names-only)
+- **Timezone type reflection** — CUBRID's `TIMESTAMPTZ`, `TIMESTAMPLTZ`, `DATETIMETZ` and `DATETIMELTZ` reflect as distinct SQLAlchemy types (`sqlalchemy_cubrid.types.TIMESTAMPTZ`/`TIMESTAMPLTZ`/`DATETIMETZ`/`DATETIMELTZ`, each with `timezone=True`) rather than collapsing into plain `TIMESTAMP`/`DATETIME` (#181, #442); see [Type Mapping](docs/TYPES.md#type-reflection-ischema_names-only)
 
 ## Documentation
 

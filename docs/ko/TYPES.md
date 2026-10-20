@@ -487,10 +487,10 @@ for col in users.columns:
 | `TIME` | `sqlalchemy.Time` / `sqlalchemy_cubrid.TIME` | `datetime.time` | 시각만. |
 | `DATETIME` | `sqlalchemy.DateTime` / `sqlalchemy_cubrid.DATETIME` | `datetime.datetime` | 하나의 값으로 날짜 + 시간. |
 | `TIMESTAMP` | `sqlalchemy.TIMESTAMP` / `sqlalchemy_cubrid.TIMESTAMP` | `datetime.datetime` | CUBRID 타임스탬프 의미론은 스키마 기본값에 따라 자동 갱신될 수 있음. |
-| `TIMESTAMPTZ` | `sqlalchemy_cubrid.TIMESTAMPTZ` | `datetime.datetime` (timezone-aware) | 명시적 타임존 타임스탬프; `timezone=True`. `TIMESTAMP`가 아닌 전용 타입으로 리플렉트 (#181). |
-| `TIMESTAMPLTZ` | `sqlalchemy_cubrid.TIMESTAMPLTZ` | `datetime.datetime` (timezone-aware) | 로컬 타임존 타임스탬프; `timezone=True`. `TIMESTAMP`가 아닌 전용 타입으로 리플렉트 (#181). |
-| `DATETIMETZ` | `sqlalchemy_cubrid.DATETIMETZ` | `datetime.datetime` (timezone-aware) | 명시적 타임존 datetime; `timezone=True`. `DATETIME`이 아닌 전용 타입으로 리플렉트 (#442). |
-| `DATETIMELTZ` | `sqlalchemy_cubrid.DATETIMELTZ` | `datetime.datetime` (timezone-aware) | 로컬 타임존 datetime; `timezone=True`. `DATETIME`이 아닌 전용 타입으로 리플렉트 (#442). |
+| `TIMESTAMPTZ` | `sqlalchemy_cubrid.types.TIMESTAMPTZ` | `datetime.datetime` (timezone-aware) | 명시적 타임존 타임스탬프; `timezone=True`. `TIMESTAMP`가 아닌 전용 타입으로 리플렉트 (#181). |
+| `TIMESTAMPLTZ` | `sqlalchemy_cubrid.types.TIMESTAMPLTZ` | `datetime.datetime` (timezone-aware) | 로컬 타임존 타임스탬프; `timezone=True`. `TIMESTAMP`가 아닌 전용 타입으로 리플렉트 (#181). |
+| `DATETIMETZ` | `sqlalchemy_cubrid.types.DATETIMETZ` | `datetime.datetime` (timezone-aware) | 명시적 타임존 datetime; `timezone=True`. `DATETIME`이 아닌 전용 타입으로 리플렉트 (#442). |
+| `DATETIMELTZ` | `sqlalchemy_cubrid.types.DATETIMELTZ` | `datetime.datetime` (timezone-aware) | 로컬 타임존 datetime; `timezone=True`. `DATETIME`이 아닌 전용 타입으로 리플렉트 (#442). |
 | `BIT(n)` | `sqlalchemy_cubrid.BIT(length=n, varying=False)` / `sqlalchemy.BINARY(n/8)` | `bytes` | 고정 길이 비트 문자열. `sa.BINARY(n)`은 `BIT(n*8)`로 컴파일. |
 | `BIT VARYING(n)` | `sqlalchemy_cubrid.BIT(length=n, varying=True)` / `sqlalchemy.VARBINARY(n/8)` | `bytes` | 가변 길이 비트 문자열. `sa.VARBINARY(n)`은 `BIT VARYING(n*8)`로 컴파일. |
 | `CHAR(n)` | `sqlalchemy_cubrid.CHAR` | `str` | 고정 길이 문자 데이터. |
