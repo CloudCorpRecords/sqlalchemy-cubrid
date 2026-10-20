@@ -39,27 +39,27 @@ class _CountingInspector:
 
     def get_columns(self, table_name: str):  # noqa: ANN001, ANN202
         self.calls["get_columns"] += 1
-        return [{"name": "id"}]
+        return ["columns-sentinel"]
 
     def get_pk_constraint(self, table_name: str):  # noqa: ANN001, ANN202
         self.calls["get_pk_constraint"] += 1
-        return {"constrained_columns": ["id"]}
+        return {"constrained_columns": ["pk-sentinel"]}
 
     def get_foreign_keys(self, table_name: str):  # noqa: ANN001, ANN202
         self.calls["get_foreign_keys"] += 1
-        return []
+        return ["foreign-keys-sentinel"]
 
     def get_indexes(self, table_name: str):  # noqa: ANN001, ANN202
         self.calls["get_indexes"] += 1
-        return []
+        return ["indexes-sentinel"]
 
     def get_unique_constraints(self, table_name: str):  # noqa: ANN001, ANN202
         self.calls["get_unique_constraints"] += 1
-        return []
+        return ["unique-constraints-sentinel"]
 
     def get_table_comment(self, table_name: str):  # noqa: ANN001, ANN202
         self.calls["get_table_comment"] += 1
-        return {}
+        return {"text": "table-comment-sentinel"}
 
 
 def test_probe_table_returns_exact_report_keys() -> None:
@@ -80,16 +80,27 @@ def test_probe_table_calls_each_method_once() -> None:
     assert inspector.calls == {name: 1 for name in _CountingInspector.METHODS}
 
 
+def test_probe_table_pins_each_value_to_its_inspector_method() -> None:
+    report = probe_table(_CountingInspector(), "users")
+    assert report == {
+        "columns": ["columns-sentinel"],
+        "pk_constraint": {"constrained_columns": ["pk-sentinel"]},
+        "foreign_keys": ["foreign-keys-sentinel"],
+        "indexes": ["indexes-sentinel"],
+        "unique_constraints": ["unique-constraints-sentinel"],
+        "table_comment": {"text": "table-comment-sentinel"},
+    }
+
+
 def test_serialize_type_class_is_module_qualified() -> None:
     assert _serialize(sqlalchemy.types.Integer) == "sqlalchemy.sql.sqltypes.Integer"
 
 
 def test_report_with_type_class_serializes_to_stable_json() -> None:
     report = {"columns": [{"name": "n", "type": sqlalchemy.types.Integer}]}
-    first = json.dumps(report, indent=2, default=_serialize, sort_keys=True)
-    second = json.dumps(report, indent=2, default=_serialize, sort_keys=True)
-    assert first == second
-    assert "sqlalchemy.sql.sqltypes.Integer" in json.loads(first)["columns"][0]["type"]
+    serialized = json.dumps(report, default=_serialize, sort_keys=True)
+    expected = '{"columns": [{"name": "n", "type": "sqlalchemy.sql.sqltypes.Integer"}]}'
+    assert serialized == expected
 
 
 def test_serialize_plain_values_are_strings() -> None:
