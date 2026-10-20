@@ -162,7 +162,7 @@ wheel/sdist의 새 환경 설치를 확인합니다. 지원 범위:
 | 네이티브 Enum | ✅ | 네이티브 `ENUM('a', 'b', ...)` — 10.2–11.4에서 검증 (#343) |
 | Interval 타입 | ❌ | CUBRID 미지원 |
 | RETURNING 절 | ❌ | `INSERT/UPDATE/DELETE ... RETURNING` 미지원 |
-| BOOLEAN | ⚠️ | SMALLINT(0/1)로 매핑 — 네이티브 불리언 없음. CUBRID의 `IS`는 `NULL`/`TRUE`/`FALSE`만 받으므로 `col.is_(True)` / `is_not(False)` 등은 null-safe `<=>`로 에뮬레이트합니다(`col <=> 1`, `(col <=> 1) = 0`) (#465). `IS [NOT] NULL`, `col == True`, `not_(col)`은 그대로 컴파일됩니다. CUBRID는 SELECT 목록의 `AND`/`OR`/`NOT`을 거부하므로 `WHERE`에서 사용하거나 `case()`로 감싸세요. [불리언 조건식](TYPES.md#불리언-조건식) 참고 |
+| BOOLEAN | ⚠️ | SMALLINT(0/1)로 매핑 — 네이티브 불리언 없음. CUBRID의 `IS`는 `NULL`/`TRUE`/`FALSE`만 받으므로 `col.is_(True)` / `is_not(False)` 등은 null-safe `<=>`로 에뮬레이트합니다(`col <=> 1`, `(col <=> 1) = 0`) (#465). `IS [NOT] NULL`, `col == True`, `not_(col)`은 그대로 컴파일됩니다. SELECT 목록 항목, CAST/함수 인자, 윈도우 `ORDER BY`/`PARTITION BY`로 쓰인 논리식은 방언이 그룹화하므로 `select(and_(...))`, `select(exists()...)`, `over(order_by=exists())`가 동작합니다(#966, #968, #970). 논리식은 여전히 `GROUP BY` 항목으로는 거부됩니다. 지원되는 위치와 이 제한은 [불리언 SELECT 목록 항목](FEATURE_SUPPORT.md#쿼리-기능), `IS`/`IS NOT`은 [불리언 조건식](TYPES.md#불리언-조건식) 참고 |
 | 시퀀스 | ❌ | CUBRID는 AUTO_INCREMENT만 사용 |
 | CHECK 제약 리플렉션 | ❌ | `get_check_constraints()`가 빈 리스트 반환 |
 | 멀티 스키마 | ❌ | CUBRID는 단일 스키마 모델 |

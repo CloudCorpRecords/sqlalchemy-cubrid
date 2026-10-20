@@ -425,7 +425,7 @@ CUBRID's `IS` accepts only `[NOT] NULL` and `[NOT] TRUE/FALSE`, and since CUBRID
 | `col == False` / `not_(col)` | `col = 0` | false / true / NULL |
 | `true()` / `false()` | `1 = 1` / `0 = 1` (`1` / `0` in a SELECT list) | constant |
 
-`IS TRUE`/`IS FALSE` never yield `NULL`, and `IS NOT TRUE`/`IS NOT FALSE` are their exact complements, so SQLAlchemy's three-valued semantics are kept in `WHERE` clauses and in SELECT lists alike; the same applies to any expression, e.g. `(col == 5).is_(True)` renders `(col = 5) <=> 1`. One limitation is CUBRID's, not the dialect's: logical operators are not allowed in a SELECT list, so `select(and_(a, b))`, `select(or_(a, b))` or a projected `NOT (...)` fail; use them in `WHERE`, or wrap them in `case()` (a `NULL` condition then takes the `else_` branch).
+`IS TRUE`/`IS FALSE` never yield `NULL`, and `IS NOT TRUE`/`IS NOT FALSE` are their exact complements, so SQLAlchemy's three-valued semantics are kept in `WHERE` clauses and in SELECT lists alike; the same applies to any expression, e.g. `(col == 5).is_(True)` renders `(col = 5) <=> 1`. The dialect groups a boolean expression used as a SELECT-list item, a CAST or function argument, or a window `ORDER BY`/`PARTITION BY`, so `select(and_(a, b))`, `select(or_(a, b))`, a projected `NOT (...)`, `select(cast(and_(...), Integer))` and `over(order_by=exists())` work (#966, #968, #970); see [Boolean SELECT-list items](FEATURE_SUPPORT.md#query-features) for the supported positions. CUBRID rejects a boolean expression as a `GROUP BY` item even inside parentheses, so label it in the SELECT list and group by the label.
 
 ---
 

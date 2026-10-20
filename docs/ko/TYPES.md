@@ -395,7 +395,7 @@ CUBRID의 `IS`는 `[NOT] NULL`과 `[NOT] TRUE/FALSE`만 받으며, CUBRID 11.2�
 | `col == False` / `not_(col)` | `col = 0` | 거짓 / 참 / NULL |
 | `true()` / `false()` | `1 = 1` / `0 = 1` (SELECT 목록에서는 `1` / `0`) | 상수 |
 
-`IS TRUE`/`IS FALSE`는 `NULL`을 반환하지 않고, `IS NOT TRUE`/`IS NOT FALSE`는 정확히 그 여집합이므로 `WHERE` 절과 SELECT 목록 모두에서 SQLAlchemy의 3값 논리 의미가 유지됩니다. 임의의 식에도 똑같이 적용되어, 예를 들어 `(col == 5).is_(True)`는 `(col = 5) <=> 1`로 렌더링됩니다. 방언이 아닌 CUBRID의 제약이 하나 있습니다. SELECT 목록에는 논리 연산자를 쓸 수 없으므로 `select(and_(a, b))`, `select(or_(a, b))` 또는 SELECT 목록의 `NOT (...)`은 실패합니다. `WHERE`에서 사용하거나 `case()`로 감싸세요(조건이 `NULL`이면 `else_` 분기가 선택됩니다).
+`IS TRUE`/`IS FALSE`는 `NULL`을 반환하지 않고, `IS NOT TRUE`/`IS NOT FALSE`는 정확히 그 여집합이므로 `WHERE` 절과 SELECT 목록 모두에서 SQLAlchemy의 3값 논리 의미가 유지됩니다. 임의의 식에도 똑같이 적용되어, 예를 들어 `(col == 5).is_(True)`는 `(col = 5) <=> 1`로 렌더링됩니다. SELECT 목록 항목, CAST/함수 인자, 윈도우 `ORDER BY`/`PARTITION BY`로 쓰인 논리식은 방언이 그룹화하므로 `select(and_(a, b))`, `select(or_(a, b))`, SELECT 목록의 `NOT (...)`, `select(cast(and_(...), Integer))`, `over(order_by=exists())`가 동작합니다(#966, #968, #970). 지원되는 위치는 [불리언 SELECT 목록 항목](FEATURE_SUPPORT.md#쿼리-기능)을 참고하세요. CUBRID는 괄호로 감싼 경우에도 논리식을 `GROUP BY` 항목으로 거부하므로 SELECT 목록에서 레이블을 붙이고 그 레이블로 그룹화하세요.
 
 ---
 

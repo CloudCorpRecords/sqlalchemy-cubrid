@@ -163,7 +163,7 @@ scope of the claim:
 | Native Enum | ✅ | Native `ENUM('a', 'b', ...)` — verified on 10.2–11.4 (#343) |
 | Interval type | ❌ | Not supported by CUBRID |
 | RETURNING clause | ❌ | `INSERT/UPDATE/DELETE ... RETURNING` not supported |
-| BOOLEAN | ⚠️ | Mapped to SMALLINT (0/1) — no native boolean. `col.is_(True)` / `is_not(False)` etc. are emulated with null-safe `<=>` (`col <=> 1`, `(col <=> 1) = 0`) because CUBRID's `IS` accepts only `NULL`/`TRUE`/`FALSE` (#465); `IS [NOT] NULL`, `col == True` and `not_(col)` compile natively. CUBRID rejects `AND`/`OR`/`NOT` in a SELECT list — use them in `WHERE` or wrap them in `case()`. See [Boolean predicates](TYPES.md#boolean-predicates) |
+| BOOLEAN | ⚠️ | Mapped to SMALLINT (0/1) — no native boolean. `col.is_(True)` / `is_not(False)` etc. are emulated with null-safe `<=>` (`col <=> 1`, `(col <=> 1) = 0`) because CUBRID's `IS` accepts only `NULL`/`TRUE`/`FALSE` (#465); `IS [NOT] NULL`, `col == True` and `not_(col)` compile natively. The dialect groups a boolean expression used as a SELECT-list item, a CAST or function argument, or a window `ORDER BY`/`PARTITION BY`, so `select(and_(...))`, `select(exists()...)` and `over(order_by=exists())` work (#966, #968, #970); a boolean expression is still rejected as a `GROUP BY` item. See [Boolean SELECT-list items](FEATURE_SUPPORT.md#query-features) for the supported positions and that limitation, and [Boolean predicates](TYPES.md#boolean-predicates) for `IS`/`IS NOT` |
 | Sequences | ❌ | CUBRID uses AUTO_INCREMENT only |
 | CHECK constraint reflection | ❌ | `get_check_constraints()` returns empty list |
 | Multi-schema | ❌ | CUBRID has single-schema model |
