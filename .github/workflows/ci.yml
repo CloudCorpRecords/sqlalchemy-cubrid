@@ -125,6 +125,7 @@ jobs:
               - 'test/test_docs_provenance_hook.py'
               - 'test/test_docs_reason.py'
               - 'test/test_make_integration.py'
+              - 'test/test_reflection_probe.py'
               - 'test/test_release_detect.py'
               - 'test/test_sqlalchemy_range.py'
               - 'test/test_support_claims.py'
