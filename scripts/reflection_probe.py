@@ -62,52 +62,55 @@ def main() -> None:
         sys.exit(1)
 
     engine = create_engine(args.url, echo=False)
-    inspector = inspect(engine)
+    try:
+        inspector = inspect(engine)
 
-    tables = [args.table] if args.table else inspector.get_table_names()
-    print(f"Probing {len(tables)} table(s)...\n")
+        tables = [args.table] if args.table else inspector.get_table_names()
+        print(f"Probing {len(tables)} table(s)...\n")
 
-    result: dict[str, Any] = {}
-    for table in sorted(tables):
-        result[table] = probe_table(inspector, table)
+        result: dict[str, Any] = {}
+        for table in sorted(tables):
+            result[table] = probe_table(inspector, table)
 
-    print(json.dumps(result, indent=2, default=_serialize))
+        print(json.dumps(result, indent=2, default=_serialize))
 
-    if args.compare:
-        module = importlib.import_module(args.compare)
-        declared_meta = None
-        for attr in dir(module):
-            obj = getattr(module, attr)
-            if isinstance(obj, type) and hasattr(obj, "metadata"):
-                meta = getattr(obj, "metadata", None)
-                if isinstance(meta, MetaData):
-                    declared_meta = meta
-                    break
+        if args.compare:
+            module = importlib.import_module(args.compare)
+            declared_meta = None
+            for attr in dir(module):
+                obj = getattr(module, attr)
+                if isinstance(obj, type) and hasattr(obj, "metadata"):
+                    meta = getattr(obj, "metadata", None)
+                    if isinstance(meta, MetaData):
+                        declared_meta = meta
+                        break
 
-        if declared_meta is None:
-            print(f"\nNo MetaData found in {args.compare}", file=sys.stderr)
-            sys.exit(1)
+            if declared_meta is None:
+                print(f"\nNo MetaData found in {args.compare}", file=sys.stderr)
+                sys.exit(1)
 
-        reflected_meta = MetaData()
-        reflected_meta.reflect(bind=engine)
+            reflected_meta = MetaData()
+            reflected_meta.reflect(bind=engine)
 
-        print("\n--- Comparison ---")
-        for table_name in sorted(declared_meta.tables):
-            if table_name in reflected_meta.tables:
-                declared = declared_meta.tables[table_name]
-                reflected = reflected_meta.tables[table_name]
-                dcols = {c.name for c in declared.columns}
-                rcols = {c.name for c in reflected.columns}
-                missing = dcols - rcols
-                extra = rcols - dcols
-                if missing:
-                    print(f"  {table_name}: declared but not reflected: {missing}")
-                if extra:
-                    print(f"  {table_name}: reflected but not declared: {extra}")
-                if not missing and not extra:
-                    print(f"  {table_name}: columns match ✓")
-            else:
-                print(f"  {table_name}: not in database")
+            print("\n--- Comparison ---")
+            for table_name in sorted(declared_meta.tables):
+                if table_name in reflected_meta.tables:
+                    declared = declared_meta.tables[table_name]
+                    reflected = reflected_meta.tables[table_name]
+                    dcols = {c.name for c in declared.columns}
+                    rcols = {c.name for c in reflected.columns}
+                    missing = dcols - rcols
+                    extra = rcols - dcols
+                    if missing:
+                        print(f"  {table_name}: declared but not reflected: {missing}")
+                    if extra:
+                        print(f"  {table_name}: reflected but not declared: {extra}")
+                    if not missing and not extra:
+                        print(f"  {table_name}: columns match ✓")
+                else:
+                    print(f"  {table_name}: not in database")
+    finally:
+        engine.dispose()
 
 
 if __name__ == "__main__":
